@@ -1,0 +1,119 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//  criar uma migration -- yarn prisma migrate dev
+model User {
+  id String @id @default(uuid())
+  name String 
+  email String
+  password String
+  created_at DateTime? @default(now())
+  updated_at DateTime? @default(now())
+
+  permission Permission @relation(fields: [permission_id], references: [id])
+  role Role @relation(fields: [role_id], references: [id]) 
+
+  @@map("users")
+  permission_id String
+  role_id String
+}
+
+model Permission {
+  id String @id @default(uuid())
+  name String
+  description String
+  created_at DateTime? @default(now())
+  updated_at DateTime? @default(now())
+
+  @@map("permissions")
+  roles Role[]
+  users User[]
+}
+
+model Role {
+  id String @id @default(uuid())
+  name String
+  description String
+  created_at DateTime? @default(now())
+  updated_at DateTime? @default(now())
+
+  permission Permission @relation(fields: [permission_id], references: [id])
+
+  @@map("roles")
+  permission_id String
+  users User[]
+}
+
+model Category {
+  id String @id @default(uuid())
+  name String
+  created_at DateTime? @default(now())
+  updated_at DateTime? @default(now())
+
+  @@map("categories")
+  products Product[]
+}
+
+model Product {
+  id String @id @default(uuid())
+  name String
+  price String
+  description String
+  banner String
+  created_at DateTime? @default(now())
+  updated_at DateTime? @default(now())
+
+  category Category @relation(fields: [category_id], references: [id])
+
+  @@map("products")
+  category_id String
+  items Item[]
+}
+
+model Table {
+  id String @id @default(uuid())
+  name String
+  status Boolean @default(false)
+  qr_code String
+  created_at DateTime? @default(now())
+  updated_at DateTime? @default(now())
+
+  @@map("tables")
+  orders Order[]
+}
+
+model Order {
+  id String @id @default(uuid())
+  status Boolean @default(false)
+  draft Boolean @default(true)
+  name String?
+  created_at DateTime? @default(now())
+  updated_at DateTime? @default(now())
+  table Table @relation(fields: [table_id], references: [id])
+
+  @@map("orders")
+  items Item[]
+  table_id String
+}
+
+model Item {
+  id String @id @default(uuid())
+  amount Int
+  created_at DateTime? @default(now())
+  updated_at DateTime? @default(now())
+  order Order @relation(fields: [order_id], references: [id])
+  product Product @relation(fields: [product_id], references: [id])
+
+  @@map("items")
+  order_id String
+  product_id String
+}
